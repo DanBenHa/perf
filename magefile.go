@@ -76,6 +76,28 @@ func Prepare() error {
 	return nil
 }
 
+// Remove user data
+func UnPrepare() error {
+	mg.Deps(EnsureK6, mkOutputDir)
+
+	env := addHarborSizeToEnv(addHarborEnv(nil))
+
+	scripts, err := filepath.Glob("./scripts/data/teardown/*.js")
+	if err != nil {
+		return err
+	}
+
+	for _, script := range scripts {
+		args := getK6RunArgs(script)
+
+		if err := sh.RunWithV(env, K6Command, args...); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 // Execute a specific test
 func Run(test string) error {
 	mg.Deps(EnsureK6, mkOutputDir)
